@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "${BACKENDPORT:-6804}:6804"
+    env_file:
+      - .env
+    environment:
+      - BACKENDPORT=6804
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      args:
+        - VITE_API_BASE_URL=/api
+    ports:
+      - "${FRONTENDPORT:-7804}:80"
+    env_file:
+      - .env
+    environment:
+      - FRONTENDPORT=7804
+      - BACKENDPORT=6804
+    depends_on:
+      - backend
+    restart: always
