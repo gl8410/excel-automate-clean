@@ -18,7 +18,11 @@ English | [中文版](README_CN.md)
 ---
 
 ## 📸 Screenshots
-*(Visuals and screenshots showcasing template definition, smart matching, and summarization flow should be placed here)*
+![Template Semantic Recognition](https://media.guil.top/api/public/dl/35c89jL4?inline=true)
+![Fragment Header Semantic Modification](https://media.guil.top/api/public/dl/PfSINqi7?inline=true)
+![Fragment Semantic Matching - Chinese](https://media.guil.top/api/public/dl/vP-VLKe4?inline=true)
+![Fragment Semantic Matching - English](https://media.guil.top/api/public/dl/nZWVIRhP?inline=true)
+![Data Merging](https://media.guil.top/api/public/dl/jhiYwMO8?inline=true)
 
 ---
 

@@ -18,7 +18,11 @@
 ---
 
 ## 📸 运行截图
-*(您可以在此处添加模板定义、智能匹配及合并结果的截图图片)*
+![模板语义识别](https://media.guil.top/api/public/dl/35c89jL4?inline=true)
+![子表头语义修改](https://media.guil.top/api/public/dl/PfSINqi7?inline=true)
+![子表语义匹配-中文](https://media.guil.top/api/public/dl/vP-VLKe4?inline=true)
+![子表语义匹配-英文](https://media.guil.top/api/public/dl/nZWVIRhP?inline=true)
+![数据合并](https://media.guil.top/api/public/dl/jhiYwMO8?inline=true)
 
 ---
 
