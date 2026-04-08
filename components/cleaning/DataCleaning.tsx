@@ -4,7 +4,8 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { FileDropzone } from '../FileDropzone';
 import { readFullExcel } from '../../services/excelService';
-import { supabase, supabaseAdmin } from '../../services/supabase';
+import { supabase } from '../../services/supabase';
+import { APP_CONFIG } from '../../app.config';
 import { Loader2, TableProperties, Settings2, Trash2, Download, Eye, RefreshCw, Coins, AlertTriangle } from 'lucide-react';
 
 export type DataType = 'Text' | 'Number' | 'DateTime' | 'Boolean';
@@ -213,20 +214,23 @@ export function DataCleaning({ t, isDark, userCredits, fetchCredits }: { t: any,
             XLSX.utils.book_append_sheet(wb, ws, 'CleanedData');
             XLSX.writeFile(wb, `Cleaned_${file?.name || 'Data'}.xlsx`);
 
-            // 5. Deduct credits via supabase RPC (recorded to public.usage_logs)
-            const { error: deductError } = await supabaseAdmin.rpc('deduct_credits', {
-                p_user_id: user.id,
-                p_cost_amount: cost,
-                p_app_id: 'Excel cleaning',
-                p_feature_name: 'Excel clean',
-                p_metadata: {}
+            // 5. Deduct credits via backend (service role key is server-side only)
+            const res = await fetch(`${APP_CONFIG.api.baseUrl}/deduct-credits`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    cost_amount: cost,
+                    app_id: 'Excel cleaning',
+                    feature_name: 'Excel clean',
+                    metadata: {}
+                })
             });
-
-            if (deductError) {
-                console.error('Failed to deduct credits:', deductError);
-            } else {
+            if (res.ok) {
                 // 6. Refresh credits display
                 await fetchCredits(user.id);
+            } else {
+                console.error('Failed to deduct credits:', await res.text());
             }
         } catch (e) {
             console.error(e);

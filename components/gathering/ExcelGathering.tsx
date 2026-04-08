@@ -5,7 +5,8 @@ import { StepOneTemplate } from './StepOneTemplate';
 import { StepTwoFragments } from './StepTwoFragments';
 import { readExcelPreview, readFullExcel, generateMergedExcel } from '../../services/excelService';
 import { apiService } from '../../services/api';
-import { supabase, supabaseAdmin } from '../../services/supabase';
+import { supabase } from '../../services/supabase';
+import { APP_CONFIG } from '../../app.config';
 import { TemplateColumn, FragmentFile } from '../../types';
 import { Database, Loader2, TableProperties, PartyPopper, RefreshCw } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -188,18 +189,21 @@ export function ExcelGathering({ t, userEmail, userCredits, fetchCredits, active
             await generateMergedExcel(templateFile, allMergedRows);
 
             if (user) {
-                const { error: deductError } = await supabaseAdmin.rpc('deduct_credits', {
-                    p_user_id: user.id,
-                    p_cost_amount: cost,
-                    p_app_id: 'Excel gathering',
-                    p_feature_name: 'Excel clean',
-                    p_metadata: {}
+                const res = await fetch(`${APP_CONFIG.api.baseUrl}/deduct-credits`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: user.id,
+                        cost_amount: cost,
+                        app_id: 'Excel gathering',
+                        feature_name: 'Excel clean',
+                        metadata: {}
+                    })
                 });
-
-                if (deductError) {
-                    console.error("Failed to deduct credits:", deductError);
-                } else {
+                if (res.ok) {
                     await fetchCredits(user.id);
+                } else {
+                    console.error("Failed to deduct credits:", await res.text());
                 }
             }
 

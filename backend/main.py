@@ -6,7 +6,8 @@ from pydantic import BaseModel
 from typing import List, Any, Optional
 import httpx
 from dotenv import load_dotenv
-from schemas import AnalyzeTemplateRequest, MapFragmentsRequest, TemplateColumn, FragmentAnalysisResult
+from supabase import create_client, Client
+from schemas import AnalyzeTemplateRequest, MapFragmentsRequest, TemplateColumn, FragmentAnalysisResult, DeductCreditsRequest
 
 load_dotenv()
 
@@ -24,6 +25,13 @@ app.add_middleware(
 API_KEY = os.getenv("LLM_API_KEY")
 LLM_URL = os.getenv("LLM_URL", "https://hiapi.online/v1/chat/completions")
 LLM_MODEL = os.getenv("LLM_MODEL", "gemini-3-flash-preview")
+
+# Supabase admin client — uses service role key, kept server-side only
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase_admin: Optional[Client] = None
+if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+    supabase_admin = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 async def call_llm(prompt: str, is_json: bool = True) -> str:
     if not API_KEY:
@@ -118,7 +126,22 @@ async def map_fragments(request: MapFragmentsRequest):
     clean_content = content.replace("```json", "").replace("```", "").strip()
     return json.loads(clean_content)
 
+@app.post("/api/deduct-credits")
+async def deduct_credits(request: DeductCreditsRequest):
+    if not supabase_admin:
+        raise HTTPException(status_code=500, detail="Supabase admin client not configured")
+    result = supabase_admin.rpc('deduct_credits', {
+        'p_user_id': request.user_id,
+        'p_cost_amount': request.cost_amount,
+        'p_app_id': request.app_id,
+        'p_feature_name': request.feature_name,
+        'p_metadata': request.metadata or {}
+    }).execute()
+    if hasattr(result, 'error') and result.error:
+        raise HTTPException(status_code=400, detail=str(result.error))
+    return {"success": True}
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("BACKENDPORT", "6804"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)

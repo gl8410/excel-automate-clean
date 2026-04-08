@@ -22,3 +22,10 @@ class Mapping(BaseModel):
 class FragmentAnalysisResult(BaseModel):
     headerRowIndex: int
     mappings: List[Mapping]
+
+class DeductCreditsRequest(BaseModel):
+    user_id: str
+    cost_amount: int
+    app_id: str
+    feature_name: str
+    metadata: Optional[dict] = {}
